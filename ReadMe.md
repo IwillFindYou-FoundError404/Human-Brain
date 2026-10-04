@@ -1,54 +1,38 @@
-# Human Connectome Simulation for Game NPCs 🧠🤖
+# Hierarchical Whole Brain Emulation (WBE) for Autonomous Game NPCs 🧠🎮
 
-A conceptual blueprint and architectural framework for simulating a 100% biological human brain structure (Whole Brain Emulation) tailored for open-world game NPCs. This repository replaces pre-programmed script pathways with **emergent behavioral generation** driven by bio-electric spike propagation across simulated human brain lobes, fully regulated by a real-time neuromodulation system.
+An advanced neuromorphic architecture implementing a **Spiking Neural Network (SNN)** based on macro-level human brain anatomy. This project is built for game developers and cognitive science enthusiasts who want to entirely replace traditional behavior trees (`if/else` scripting) with **emergent, bio-chemically regulated intelligence**.
 
----
-
-## 🏗️ Architectural Framework
-
-The system maps environment states directly into structural neuro-anatomy via a 4-tier processing pipeline:
-
-1. **Human Connectome Layer (The Biological Hardware):** Maps simulated network parameters and synaptic pathways across the 4 major cerebral lobes (**Frontal, Parietal, Temporal, Occipital**) and deep subcortical nodes (**Thalamus, Amygdala, Hypothalamus**).
-2. **Neuromodulation Matrix (The Chemistry):** Continuous state tracking of 4 primary virtual neurotransmitters (**Dopamine, Serotonin, Noradrenaline, Cortisol**) that dynamically modulate neuron firing thresholds across the network.
-3. **Bio-Electric Simulation Engine:** A simplified Spiking Neural Network (SNN) tracking membrane voltage shifts at millisecond intervals to propagate data.
-4. **Game I/O Bridge:** Translates environmental inputs (sensory triggers) into digital nerve impulses, and motor cortex output patterns back into structural movement vectors (`Vector3`).
+NPCs driven by this model do not follow scripted paths—they read input environments as bio-electric voltage train parameters, solve cognitive conflicts inside simulated cortical lobes, store trauma within physically mutating synaptic matrices (Hippocampus), and synthesize autonomous vocal speech through a simulated Broca-Wernicke loop.
 
 ---
 
-## 📂 Repository Components
+## 🏗️ Structural Architecture
 
-- `src/connectome.py`: Structural definitions of human cortical lobes, deep structures, and synaptic links.
-- `src/neuromodulation.py`: Manages neurotransmitter synthesis, decay rates, and homeostatic baseline calculations.
-- `src/simulator.py`: Core logic loop governing electric impulse routing through the node graph.
-- `examples/run_npc_brain.py`: Executable scenario modeling an NPC's internal cognitive conflict under sudden environmental threat.
+The network simulation routes data across major human neuro-anatomical domains:
+
+*   **`src/core/bio_neuron.py` (The Computational Node):** Implements the *Leaky Integrate-and-Fire (LIF)* mathematical differential equation model with biological refractory period limits.
+*   **`src/chemical/neuromodulation.py` (The Emotional Chemistry):** Simulates global chemical modulators (**Dopamine, Serotonin, Noradrenaline, Cortisol**). High Noradrenaline directly drops the structural firing threshold of emotional defense units.
+*   **`src/cortex/temporal_language.py` (The Speech Loop):** Recreates **Wernicke's Area** (transmuting string data into specialized spatial matrix input voltages) and **Broca's Area** (decoding structural downstream motor spikes back into contextualized dynamic speech phrases).
+*   **`src/subcortex/hippocampus_memory.py` (Neuroplastic Learning):** Uses a customized *Spike-Timing-Dependent Plasticity (STDP)* rule to forge or decay internal memory tensors permanently based on active emotional states.
 
 ---
 
-## 🚀 Installation & Sample Execution
+## 🚀 Execution & Emergence Trace
 
-Run the simulation runner script to observe how behaviors spontaneously emerge through synaptic weighting and chemical spikes:
+To run the simulation and observe the millisecond-by-millisecond bio-electric conflict resolution of an NPC under an active environmental weapon threat, execute:
 
 ```bash
 pip install -r requirements.txt
-python examples/run_npc_brain.py
+python examples/run_grand_simulation.py
 ```
 
-### Expected Output Trace:
-```text
---- Initializing Simulated NPC Human Brain Connectome v1.0 ---
+### Underlying Logic Paradigm
+1. **Sensory Ingestion:** The game environment triggers visual/auditory raw current injection into the **Thalamus Gateway**.
+2. **Cascading Propagation:** Current travels through localized weight networks. The **Amygdala** flags danger, forcing the **Hypothalamus** to flood the grid with Noradrenaline.
+3. **Cognitive Conflict:** The **Prefrontal Cortex** evaluates old dopamine memory traces from the **Hippocampus** against real-time panic currents. 
+4. **Emergent Behavior Output:** The dominant structural voltage train dictates the motor controller vector and Broca's vocal syntax assembly without a single hardcoded statement.
 
-[0.00s] Environment Signal: Threat detected! (Player draws weapon).
-[0.02s] Thalamus routes visual spike trains to Occipital Lobe and Amygdala.
-[0.05s] Amygdala registers danger -> Hypothalamus pumps Noradrenaline.
-        -> Current Noradrenaline Level: 8.40
-[0.25s] Prefrontal Cortex (Logic/Memory) vs Amygdala (Fear) conflict resolving...
-[0.40s] Motor neurons fired! Amygdala bypasses prefrontal logic via high-voltage spikes.
-        -> Action Output: Vector3(-1.0, 0.0, -0.5) [NPC retreats in panic]
-```
-
-## 🛠️ Requirements & Tech Stack
-- **Language:** Python 3.9+
-- **Core Dependencies:** NetworkX (Graph node modeling), NumPy (Matrix calculations).
+---
 
 ## 📄 License
-Distributed under the MIT License. Free for open-source modification and integration into custom game engines.
+This repository is published under the **MIT License**. Open for heavy structural modification, game engine porting (C# / C++), and academic neuro-computational fork extensions.
