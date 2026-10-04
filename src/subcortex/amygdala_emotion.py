@@ -1,16 +1,14 @@
 # src/subcortex/amygdala_emotion.py
 import numpy as np
-from src.core.bio_neuron import LeakyIntegrateAndFireGroup
+from src.core.bio_neuron import ConductanceBasedLIFGroup
 
-class AmygdalaEmotion:
-    """Hạch hạnh nhân: Tính toán mức độ đe dọa và gửi tín hiệu ép tim mạch/hóa học sinh tồn"""
+class AmygdalaEmotionCore:
+    """Hạch hạnh nhân: Máy quét và phản xạ vô điều kiện trước nguy cơ đe dọa sinh tồn"""
     def __init__(self):
-        self.population = LeakyIntegrateAndFireGroup(100, "Amygdala")
+        self.population = ConductanceBasedLIFGroup(150, "Amygdala_Core")
 
-    def evaluate_threat(self, visual_features):
-        """Nhận diện tín hiệu hình ảnh nguy hiểm để kích phát dòng điện sinh tồn"""
-        current_input = np.zeros(self.population.size)
-        # Giả định 20 neuron đầu tiên nhạy cảm với các vật thể dạng súng/vũ khí
-        if visual_features.get("weapon_detected", False):
-            current_input[0:30] = 3.0  # Bơm dòng điện cực mạnh kích hoạt báo động khẩn
-        return current_input
+    def process_interregional_flows(self, visual_spikes, visual_weights):
+        """Tính toán dòng điện synapse truyền từ Thùy chẩm sang Hạch hạnh nhân"""
+        # Dòng điện truyền qua = Lưới điện thùy chẩm x Ma trận liên vùng
+        in_current = np.dot(visual_spikes.astype(float), visual_weights) * 12.0
+        return in_current
