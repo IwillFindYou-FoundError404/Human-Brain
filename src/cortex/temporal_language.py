@@ -1,55 +1,49 @@
 # src/cortex/temporal_language.py
 import numpy as np
-from src.core.bio_neuron import LeakyIntegrateAndFireGroup
+from src.core.bio_neuron import ConductanceBasedLIFGroup
 
-class AdvancedLanguageCortex:
+class TemporalLanguageSystem:
     """
-    Vùng Ngôn ngữ Nâng cao: Không dùng câu thoại cố định.
-    NPC tự lắp ghép câu từ luồng xung điện động lực của các thùy não.
+    Vòng lặp ngôn ngữ Broca - Wernicke của người trưởng thành.
+    Không dùng câu thoại cố định, ngôn ngữ tự hình thành dựa trên phân vùng cụm xung thần kinh.
     """
     def __init__(self):
-        # Vùng Broca gồm 300 neuron, chia thành các phân vùng từ vựng độc lập
-        self.broca = LeakyIntegrateAndFireGroup(300, "Broca_Dynamic_Speech")
+        self.wernicke = ConductanceBasedLIFGroup(200, "Wernicke_Area") # Phân tích ngữ nghĩa
+        self.broca = ConductanceBasedLIFGroup(200, "Broca_Area")       # Lắp ráp cấu trúc câu
         
-        # Kho từ vựng của NPC (Mỗi từ được đại diện bởi một cụm 30 neuron)
-        self.lexicon = {
+        # Bản đồ ngữ nghĩa phân vùng neuron: Mỗi khái niệm chiếm một cụm 20 tế bào
+        self.semantic_lexicon = {
             0: "Tôi", 1: "Bạn", 2: "Súng", 3: "Sợ", 
-            4: "Tại sao", 5: "Không", 6: "Dừng lại", 7: "Nguy hiểm",
-            8: "Cứu", 9: "Đau"
+            4: "Tại_Sao", 5: "Dừng_Lại", 6: "Nguy_Hiểm", 7: "Tình_Bạn"
         }
+
+    def process_incoming_speech(self, text_input):
+        """Mã hóa lời nói của người chơi thành dòng điện truyền thẳng vào vùng Wernicke"""
+        in_current = np.zeros(self.wernicke.size)
+        words = text_input.upper().split()
         
-    def decode_spikes_to_speech(self, broca_spikes):
-        """
-        Dịch luồng điện động thành câu nói tự do.
-        Thuật toán quét qua toàn bộ lưới điện của vùng Broca, tìm các phân vùng từ 
-        có tỉ lệ phát xung vượt ngưỡng và sắp xếp chúng theo cường độ dòng điện.
-        """
+        # Ánh xạ từ vựng vào cụm neuron tương ứng
+        word_to_id = {"TÔI": 0, "BẠN": 1, "SÚNG": 2, "SỢ": 3, "TẠI_SAO": 4, "DỪNG_LẠI": 5, "NGUY_HIỂM": 6, "BAN": 7}
+        for w in words:
+            if w in word_to_id:
+                idx = word_to_id[w] * 20
+                in_current[idx:idx+20] = 30.0 # Bơm dòng điện kích thích ngữ nghĩa
+        return in_current
+
+    def decode_broca_to_speech(self, broca_spikes):
+        """Giải mã hoạt động mạng lưới điện của vùng Broca thành chuỗi phát ngôn tự do của NPC"""
         if not np.any(broca_spikes):
             return "..."
-
-        activated_words = []
-        
-        # Quét qua 10 từ trong kho từ vựng (mỗi từ chiếm 30 neuron)
-        for word_id, word_str in self.lexicon.items():
-            start_idx = word_id * 30
-            end_idx = start_idx + 30
             
-            # Tính toán cường độ dòng điện (số lượng xung) của từ này
-            spike_count = np.sum(broca_spikes[start_idx:end_idx])
-            
-            # Nếu từ này nhận được đủ điện tích từ Thùy trán và Amygdala truyền sang
-            if spike_count > 4:  # Ngưỡng kích hoạt từ đơn
-                activated_words.append((word_str, spike_count))
-        
-        # Sắp xếp các từ theo cường độ luồng điện (từ nào điện mạnh hơn sẽ nói trước)
-        activated_words.sort(key=lambda x: x[1], reverse=True)
-        
-        if not activated_words:
+        active_concepts = []
+        for concept_id, word_str in self.semantic_lexicon.items():
+            start = concept_id * 20
+            # Kiểm tra xem cụm neuron của từ đơn này có mật độ phát xung vượt ngưỡng không
+            if np.sum(broca_spikes[start:start+20]) >= 3:
+                active_concepts.append(word_str)
+                
+        if not active_concepts:
             return "..."
             
-        # Lắp ghép các từ đơn lẻ lại thành một cấu trúc câu tự phát sinh
-        raw_words = [item[0] for item in activated_words]
-        
-        # Tạo ra câu nói dựa trên các từ bị kích hoạt điện (Ví dụ: ["Tại sao", "Súng", "Tôi", "Sợ"])
-        sentence = " ... ".join(raw_words) + "!"
-        return sentence
+        # Tự lắp ghép cấu trúc câu dựa trên luồng điện sinh học tự phát sinh
+        return " ... ".join(active_concepts) + "!"
