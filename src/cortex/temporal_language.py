@@ -2,56 +2,54 @@
 import numpy as np
 from src.core.bio_neuron import LeakyIntegrateAndFireGroup
 
-class LanguageCortex:
+class AdvancedLanguageCortex:
     """
-    Mô phỏng vùng Broca và Wernicke.
-    Dịch ngôn ngữ thành mẫu xung thần kinh (Encoding) và ngược lại (Decoding).
+    Vùng Ngôn ngữ Nâng cao: Không dùng câu thoại cố định.
+    NPC tự lắp ghép câu từ luồng xung điện động lực của các thùy não.
     """
     def __init__(self):
-        self.wernicke = LeakyIntegrateAndFireGroup(200, "Wernicke_Area") # Hiểu ngôn ngữ
-        self.broca = LeakyIntegrateAndFireGroup(200, "Broca_Area")       # Phát ngôn
+        # Vùng Broca gồm 300 neuron, chia thành các phân vùng từ vựng độc lập
+        self.broca = LeakyIntegrateAndFireGroup(300, "Broca_Dynamic_Speech")
         
-        # Từ điển mã hóa khái niệm (Concept Map) kết nối từ ngữ với mẫu xung điện (Pattern IDs)
-        self.vocabulary = {
-            "SÚNG": 0, "BẠN": 1, "CỨU MẠNG": 2, "NGUY HIỂM": 3, 
-            "TẠI SAO": 4, "XIN LỖI": 5, "CHẠY": 6, "ĐAU": 7
+        # Kho từ vựng của NPC (Mỗi từ được đại diện bởi một cụm 30 neuron)
+        self.lexicon = {
+            0: "Tôi", 1: "Bạn", 2: "Súng", 3: "Sợ", 
+            4: "Tại sao", 5: "Không", 6: "Dừng lại", 7: "Nguy hiểm",
+            8: "Cứu", 9: "Đau"
         }
-        # Ánh xạ ngược từ mẫu xung của vùng Broca ra tiếng người
-        self.reverse_vocab = {v: k for k, v in self.vocabulary.items()}
-
-    def encode_speech_to_spikes(self, text):
-        """Dịch văn bản môi trường thành luồng điện kích hoạt các neuron vùng Wernicke"""
-        input_current = np.zeros(self.wernicke.size)
-        words = text.upper().split()
-        for word in words:
-            if word in self.vocabulary:
-                pattern_id = self.vocabulary[word]
-                # Kích hoạt một cụm neuron cụ thể đại diện cho từ đó
-                start_idx = pattern_id * 20
-                input_current[start_idx:start_idx+20] = 2.5
-        return input_current
-
+        
     def decode_spikes_to_speech(self, broca_spikes):
-        """Dịch luồng điện từ vùng Broca ngược lại thành lời nói của NPC"""
+        """
+        Dịch luồng điện động thành câu nói tự do.
+        Thuật toán quét qua toàn bộ lưới điện của vùng Broca, tìm các phân vùng từ 
+        có tỉ lệ phát xung vượt ngưỡng và sắp xếp chúng theo cường độ dòng điện.
+        """
         if not np.any(broca_spikes):
-            return None
+            return "..."
+
+        activated_words = []
+        
+        # Quét qua 10 từ trong kho từ vựng (mỗi từ chiếm 30 neuron)
+        for word_id, word_str in self.lexicon.items():
+            start_idx = word_id * 30
+            end_idx = start_idx + 30
             
-        # Tìm xem cụm neuron của từ nào đang phát xung mạnh nhất
-        best_pattern = -1
-        max_spikes = 0
-        for pattern_id in range(8):
-            start_idx = pattern_id * 20
-            spike_count = np.sum(broca_spikes[start_idx:start_idx+20])
-            if spike_count > max_spikes:
-                max_spikes = spike_count
-                best_pattern = pattern_id
-                
-        if best_pattern in self.reverse_vocab and max_spikes > 2:
-            output_map = {
-                "TẠI SAO": "Tại sao... anh lại làm thế với tôi?",
-                "NGUY HIỂM": "Tránh xa tôi ra! Nguy hiểm!",
-                "BẠN": "Cảm ơn... chúng ta vẫn là bạn chứ?",
-                "CHẠY": "Không... đừng bắn!"
-            }
-            return output_map.get(self.reverse_vocab[best_pattern], "...")
-        return None
+            # Tính toán cường độ dòng điện (số lượng xung) của từ này
+            spike_count = np.sum(broca_spikes[start_idx:end_idx])
+            
+            # Nếu từ này nhận được đủ điện tích từ Thùy trán và Amygdala truyền sang
+            if spike_count > 4:  # Ngưỡng kích hoạt từ đơn
+                activated_words.append((word_str, spike_count))
+        
+        # Sắp xếp các từ theo cường độ luồng điện (từ nào điện mạnh hơn sẽ nói trước)
+        activated_words.sort(key=lambda x: x[1], reverse=True)
+        
+        if not activated_words:
+            return "..."
+            
+        # Lắp ghép các từ đơn lẻ lại thành một cấu trúc câu tự phát sinh
+        raw_words = [item[0] for item in activated_words]
+        
+        # Tạo ra câu nói dựa trên các từ bị kích hoạt điện (Ví dụ: ["Tại sao", "Súng", "Tôi", "Sợ"])
+        sentence = " ... ".join(raw_words) + "!"
+        return sentence
