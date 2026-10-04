@@ -1,0 +1,15 @@
+{
+  "name": "human-brain-npc-core-v2",
+  "version": "2.0.0",
+  "description": "Dense Human Brain and Glial Emulation Core for Multi-Game NPCs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
