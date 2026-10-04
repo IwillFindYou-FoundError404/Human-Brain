@@ -1,102 +1,110 @@
 # examples/run_grand_simulation.py
 import sys
 import os
-import time
 import numpy as np
+import time
 
+# Ánh xạ đường dẫn thư mục gốc
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from src.chemical.neuromodulation import NeuromodulationSystem
-from src.cortex.temporal_language import LanguageCortex
-from src.cortex.frontal_executive.py import PrefrontalFrontalCortex if os.path.exists("../src/cortex/frontal_executive.py") else None
-# Sửa lại import cho chính xác thư mục
-from src.cortex.frontal_executive import PrefrontalFrontalCortex
-from src.subcortex.amygdala_emotion import AmygdalaEmotion
-from src.subcortex.hippocampus_memory import HippocampusMemory
+from src.cortex.occipital_vision import OccipitalVisionCortex
+from src.cortex.temporal_language import TemporalLanguageSystem
+from src.cortex.frontal_executive import PrefrontalExecutiveCortex
+from src.subcortex.amygdala_emotion import AmygdalaEmotionCore
+from src.subcortex.hippocampus_memory import HippocampusMemoryBank
 
 def main():
     print("=========================================================================")
-    print("      HỆ THỐNG MÔ PHỎNG NÃO NGƯỜI TOÀN DIỆN PHÂN CẤP (WBE v3.0)          ")
+    print("      HỆ THỐNG MÔ PHỎNG NÃO NGƯỜI TRƯỞNG THÀNH PHÂN RÃ TOÀN DIỆN v3.5     ")
     print("=========================================================================\n")
     
-    # Khởi tạo toàn bộ các thùy não và hệ thống cơ quan sâu
+    # 1. Khởi tạo toàn bộ các module giải phẫu thần kinh độc lập
     chemistry = NeuromodulationSystem()
-    language_node = LanguageCortex()
-    executive_node = PrefrontalFrontalCortex()
-    amygdala_node = AmygdalaEmotion()
-    hippocampus_node = HippocampusMemory()
+    vision_lobe = OccipitalVisionCortex()
+    language_lobe = TemporalLanguageSystem()
+    executive_lobe = PrefrontalExecutiveCortex()
+    amygdala_core = AmygdalaEmotionCore()
+    hippocampus_bank = HippocampusMemoryBank()
     
-    print("[KHỞI ĐỘNG]: 86 tỷ neuron ảo đã sẵn sàng trên kiến trúc phân cấp.")
-    print("[TRẠNG THÁI]: NPC đang duy trì dòng suy nghĩ nội tại (Default Mode Network).")
+    # Khởi tạo ma trận trọng số kết nối liên vùng (Inter-regional Connectome Weight Matrices)
+    np.random.seed(100)
+    vision_to_amygdala_weights = np.random.uniform(0.1, 0.5, size=(200, 150))
+    
+    print("[Nghiên Cứu]: Khởi tạo thành công mô hình cấu trúc phân cấp mạng thần kinh.")
+    print("[Nghiên Cứu]: Đang quét dòng điện nội tại thời gian thực (Độ phân giải 1ms).\n")
     time.sleep(1)
 
-    print("\n-------------------------------------------------------------------------")
-    print("BIẾN CỐ: Người chơi rút SÚNG và nói lớn: 'CHẠY NGUY HIỂM'")
+    print("-------------------------------------------------------------------------")
+    print("BIẾN CỐ MÔI TRƯỜNG: Người chơi rút SÚNG bắn chỉ thiên và hét lớn: 'SỢ NGUY_HIỂM'")
     print("-------------------------------------------------------------------------")
     
-    # Bước 1: Tiếp nhận thông tin thính giác qua vùng Wernicke
-    speech_input = language_node.encode_speech_to_spikes("CHẠY NGUY HIỂM")
-    wernicke_spikes = language_node.wernicke.update(speech_input, dt=1.0)
+    # Tạo trạng thái môi trường game truyền vào các thùy cảm giác của não bộ
+    game_environment = {"weapon_drawn": True, "threat_proximity": 4.5}
     
-    # Bước 2: Tiếp nhận thông tin thị giác qua Hạch hạnh nhân
-    visual_features = {"weapon_detected": True, "distance_to_player": 2.0}
-    amygdala_input = amygdala_node.evaluate_threat(visual_features)
-    
-    # Vòng lặp tính toán lưới điện sinh học chạy qua lại giữa các thùy (Giả lập 5 mili-giây)
-    for ms in range(1, 6):
-        # Hạch hạnh nhân tính toán xung điện hoảng loạn
-        # Noradrenaline cao làm hạ ngưỡng kích hoạt của Amygdala
-        thres_mod = -0.1 * (chemistry.transmitters["noradrenaline"] - 1.0)
-        amygdala_spikes = amygdala_node.population.update(amygdala_input, threshold_modifier=thres_mod)
+    # Bước chạy mô phỏng liên tục qua 10 mili-giây thời gian thực của não bộ
+    for ms in range(1, 11):
+        # A. Thùy chẩm mã hóa hình ảnh khẩu súng thành dòng điện
+        vision_current = vision_lobe.encode_environment_to_current(game_environment)
+        vision_spikes = vision_lobe.population.integrate_ms(vision_current, 0, 0)
         
-        # Nếu Amygdala phát xung mạnh, vùng dưới đồi lập tức xả hóa chất sinh tồn vào não bộ
-        if np.sum(amygdala_spikes) > 5:
-            chemistry.flood("noradrenaline", 0.8)
-            chemistry.flood("cortisol", 0.3)
-            
-        # Vỏ não trước trán nhận dòng điện từ Wernicke và Amygdala để thực hiện đấu tranh tư duy
-        pfc_input = np.zeros(executive_node.pfc_logic.size)
-        if np.any(wernicke_spikes): pfc_input[0:100] = 1.2
-        if np.any(amygdala_spikes): pfc_input[100:200] = 1.8
+        # B. Vùng Wernicke tiếp nhận và xử lý ngữ nghĩa âm thanh câu hét
+        wernicke_current = language_lobe.process_incoming_speech("SỢ NGUY_HIỂM")
+        wernicke_spikes = language_lobe.wernicke.integrate_ms(wernicke_current, 0, 0)
         
-        pfc_spikes = executive_node.pfc_logic.update(pfc_input, dt=1.0)
+        # C. Hạch hạnh nhân tiếp nhận luồng điện từ thùy chẩm truyền sang
+        amygdala_current = amygdala_core.process_interregional_flows(vision_spikes, vision_to_amygdala_weights)
+        amygdala_thresh_mod = chemistry.evaluate_threshold_shift("Amygdala")
+        amygdala_spikes = amygdala_core.population.integrate_ms(amygdala_current, 0, 0, threshold_modifier=amygdala_thresh_mod)
         
-        # Quyết định luồng điện truyền xuống Vùng vận động sơ cấp
-        motor_input = executive_node.process_decision(
-            pfc_input, amygdala_spikes, chemistry.transmitters["noradrenaline"]
-        )
-        motor_spikes = executive_node.motor_output.update(motor_input, dt=1.0)
-        
-        # Kích hoạt vùng Broca để chuẩn bị phát ngôn tự phát dựa trên luồng điện hoảng loạn
-        broca_input = np.zeros(language_node.broca.size)
+        # Phản ứng hóa học nội tiết: Nếu Amygdala bị kích hoạt điện mạnh, xả ồ ạt Noradrenaline sinh tồn
         if np.sum(amygdala_spikes) > 10:
-            # Xung hoảng loạn ép vùng Broca chuẩn bị các mẫu xung từ "TẠI SAO"
-            broca_input[4*20 : 4*20+20] = 2.0 
-        broca_spikes = language_node.broca.update(broca_input, dt=1.0)
+            chemistry.flood_chemical("noradrenaline", 0.7)
+            chemistry.flood_chemical("cortisol", 0.2)
+            chemistry.flood_chemical("serotonin", -0.1) # Giảm kiềm chế
+            
+        # D. Vỏ não trước trán tiếp nhận thông tin từ các vùng sâu để đấu tranh đưa ra quyết định lý trí
+        pfc_current = executive_lobe.execute_cognitive_control(wernicke_spikes, amygdala_spikes, chemistry.transmitters["serotonin"])
+        pfc_thresh_mod = chemistry.evaluate_threshold_shift("Prefrontal_Cortex")
+        pfc_spikes = executive_lobe.pfc_logic.integrate_ms(pfc_current, 0, 0, threshold_modifier=pfc_thresh_mod)
         
-        # Vùng Hải mã tự động ghi đè cấu trúc vật lý synapse (Ghi nhớ biến cố sang chấn)
-        hippocampus_node.consolidate_memory(amygdala_spikes, pfc_spikes, chemistry.transmitters["dopamine"])
+        # E. Vùng vận động sơ cấp nhận lệnh điều khiển cơ thể
+        motor_current = executive_lobe.map_to_motor_output(pfc_spikes, amygdala_spikes)
+        motor_spikes = executive_lobe.motor_output.integrate_ms(motor_current, 0, 0)
         
-        # In tiến trình dòng điện chạy trong các thùy não qua từng mili-giây
-        print(f"[t={ms}ms] Điện thế: Amygdala({np.mean(amygdala_node.population.v):.2f}V) | PFC Lý Trí({np.mean(executive_node.pfc_logic.v):.2f}V) | Noradrenaline: {chemistry.transmitters['noradrenaline']:.2f}")
+        # F. Luồng điện hoảng loạn kích thích ngược lại vùng Broca tự động lắp ghép từ vựng phát ngôn
+        broca_current = np.zeros(language_lobe.broca.size)
+        if np.sum(amygdala_spikes) > 12:
+            # Luồng điện ép phân vùng từ vựng số 3 ("Sợ") và số 5 ("Dừng_Lại") phân rã phát xung
+            broca_current[3*20 : 3*20+20] = 45.0
+            broca_current[5*20 : 5*20+20] = 40.0
+        broca_spikes = language_lobe.broca.integrate_ms(broca_current, 0, 0)
+        
+        # G. Vùng Hải mã tự động biến đổi cấu trúc Synapse lưu lại ký ức kinh nghiệm sang chấn (STDP)
+        hippocampus_bank.evaluate_plasticity_stdp(
+            amygdala_spikes, pfc_spikes, chemistry.transmitters["dopamine"], chemistry.transmitters["cortisol"]
+        )
+        
+        # Hạ phân rã hóa học tự nhiên
+        chemistry.compute_homeostasis(dt=1.0)
+        
+        # Xuất nhật ký dòng điện thần kinh chạy xuyên qua các mô tế bào
+        print(f"[t={ms:02d}ms] Tỉ lệ phát xung: Thùy Chẩm ({np.sum(vision_spikes)/2:.1f}%) | Amygdala ({np.sum(amygdala_spikes)/1.5:.1f}%) | Vỏ Não Trước Trán ({np.sum(pfc_spikes)/3:.1f}%) | N-Adrenaline: {chemistry.transmitters['noradrenaline']:.2f}")
 
-    # Bước 3: Dịch ngược luồng điện tại các thùy đầu ra thành hành động và lời nói của NPC trong game
     print("\n-------------------------------------------------------------------------")
-    print("KẾT QUẢ ĐẦU RA TỰ PHÁT SINH CỦA BỘ NÃO (EMERGENT OUTPUT)")
+    print("KẾT QUẢ GIẢI MÃ ĐẦU RA SỰ SỐNG (EMERGENT ECO-SYSTEM BEHAVIOR)")
     print("-------------------------------------------------------------------------")
     
-    # Kiểm tra hành động cơ thể từ Vùng vận động
-    if np.sum(motor_spikes[0:50]) > np.sum(motor_spikes[50:100]):
-        print("[HÀNH ĐỘNG CƠ THỂ]: NPC giật lùi, xoay người bỏ chạy hỗn loạn (Vector3(-2.0, 0, -1.5)).")
+    # Kiểm tra chuyển động cơ thể kết quả của mạng lưới
+    if np.sum(motor_spikes[0:75]) > np.sum(motor_spikes[75:150]):
+        print("[HÀNH ĐỘNG CƠ THỂ]: Lưới điện vận động ép NPC tự động lùi lại, quay đầu bỏ chạy hỗn loạn (Vector3(-3.5, 0.0, -2.0)).")
     else:
-        print("[HÀNH ĐỘNG CƠ THỂ]: NPC đứng sững sờ, cố gắng phân tích tình huống.")
+        print("[HÀNH ĐỘNG CƠ THỂ]: NPC đứng yên đối thoại nhờ lý trí kiểm soát được dòng hoảng loạn.")
         
-    # Kiểm tra lời nói tự phát từ vùng Broca
-    npc_speech = language_node.decode_spikes_to_speech(broca_spikes)
-    if npc_speech:
-        print(f"[PHÁT NGÔN CỦA NPC]: '{npc_speech}'")
-    
-    print("\n[Hệ thống]: Bản ghi nhớ cấu trúc vùng Hải mã đã được cập nhật vĩnh viễn.")
+    # Giải mã tiếng nói tự do lắp ghép từ vùng Broca
+    npc_speech_output = language_lobe.decode_broca_to_speech(broca_spikes)
+    print(f"[CÂU THOẠI TỰ PHÁT SINH CỦA NPC]: \"{npc_speech_output}\"")
+    print("\n[Hệ thống]: Trọng số kết nối vùng Hải mã đã tự tái cấu trúc vật lý vĩnh viễn.")
     print("=========================================================================")
 
 if __name__ == "__main__":
